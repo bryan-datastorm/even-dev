@@ -6,6 +6,10 @@ type AppModuleShape = {
 }
 
 const appEntryModules = import.meta.glob('../apps/*/index.ts')
+const redditSubmoduleMarker = import.meta.glob('../apps/reddit/src/even-client.ts')
+const starsSubmoduleMarker = import.meta.glob('../apps/stars/src/main.ts')
+const epubSubmoduleMarker = import.meta.glob('../apps/epub/src/main.ts')
+const transitSubmoduleMarker = import.meta.glob('../apps/transit/package.json')
 
 function extractAppName(modulePath: string): string {
   const match = modulePath.match(/\.\.\/apps\/([^/]+)\/index\.ts$/)
@@ -13,10 +17,24 @@ function extractAppName(modulePath: string): string {
 }
 
 function discoveredApps(): string[] {
-  return Object.keys(appEntryModules)
+  const names = Object.keys(appEntryModules)
     .map(extractAppName)
     .filter(Boolean)
-    .sort((a, b) => a.localeCompare(b))
+
+  if (Object.keys(redditSubmoduleMarker).length > 0) {
+    names.push('reddit')
+  }
+  if (Object.keys(starsSubmoduleMarker).length > 0) {
+    names.push('stars')
+  }
+  if (Object.keys(epubSubmoduleMarker).length > 0) {
+    names.push('epub')
+  }
+  if (Object.keys(transitSubmoduleMarker).length > 0) {
+    names.push('transit')
+  }
+
+  return [...new Set(names)].sort((a, b) => a.localeCompare(b))
 }
 
 function resolveSelectedApp(appNames: string[]): string {
@@ -53,12 +71,23 @@ async function boot() {
   const modulePath = `../apps/${selectedAppName}/index.ts`
   const importer = appEntryModules[modulePath]
 
-  if (!importer) {
+  const module = importer
+    ? ((await importer()) as AppModuleShape)
+    : selectedAppName === 'reddit' && Object.keys(redditSubmoduleMarker).length > 0
+      ? ((await import('./reddit-submodule-adapter')) as AppModuleShape)
+      : selectedAppName === 'stars' && Object.keys(starsSubmoduleMarker).length > 0
+        ? ((await import('./stars-submodule-adapter')) as AppModuleShape)
+        : selectedAppName === 'epub' && Object.keys(epubSubmoduleMarker).length > 0
+          ? ((await import('./epub-submodule-adapter')) as AppModuleShape)
+          : selectedAppName === 'transit' && Object.keys(transitSubmoduleMarker).length > 0
+            ? ((await import('./transit-submodule-adapter')) as AppModuleShape)
+      : null
+
+  if (!module) {
     updateStatus(`App not found: ${selectedAppName}`)
     throw new Error(`Missing app module: ${modulePath}`)
   }
 
-  const module = (await importer()) as AppModuleShape
   const loadedApp = module.app ?? module.default
 
   if (!loadedApp || typeof loadedApp.createActions !== 'function') {

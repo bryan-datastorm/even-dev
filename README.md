@@ -22,11 +22,11 @@ The goal of this repository is to provide a simple starting point for building E
 |:-----------------------------:|:----------------------------------------------------------------| :---------------: |
 |    [clock](./apps/clock/)     | Clock App - app refresh test showcase                           | ![clock](./media/clock.png) |
 |    [demo](./apps/demo/)       | Demo app (base) - simple control showcase                       | ![demo](./media/demo.png) |
-|    [epub](./apps/epub/)       | Epub reader demo @chortya/epub-reader-g2                        | ![epub](./media/epub.png) ![epub2](./media/epub2.png) | 
-|    [reddit](./apps/reddit/)   | Reddit feed and comments browser @fuutott/rdt-even-g2-rddit-client | ![reddit](./media/reddit.png) |
-|    [stars](./apps/stars/)     | A real-time sky chart application @thibautrey/even-stars        | ![stars](./media/stars.png) |
+|    [epub](https://github.com/chortya/epub-reader-g2)       | Epub reader demo @chortya/epub-reader-g2 (git submodule)        | ![epub](./media/epub.png) ![epub2](./media/epub2.png) | 
+|    [reddit](https://github.com/fuutott/rdt-even-g2-rddit-client)   | Reddit feed and comments browser @fuutott/rdt-even-g2-rddit-client (git submodule) | ![reddit](./media/reddit.png) |
+|    [stars](https://github.com/thibautrey/even-stars)     | A real-time sky chart application @thibautrey/even-stars (git submodule) | ![stars](./media/stars.png) |
 |    [timer](./apps/timer/)     | Countdown timer (1, 5 ... min, click to start, double-click to stop) | ![timer](./media/timer.png) |
-|    [transit](./apps/transit/) | Public transport planner @langerhans/even-transit               | ![stars](./media/transport.png) |
+|    [transit](https://github.com/langerhans/even-transit) | Public transport planner @langerhans/even-transit (git submodule) | ![stars](./media/transport.png) |
 |    [restapi](./apps/restapi/) | Simple REST API client (micrOS integration)                     | ![stars](./media/restapi.png) |
 
 ---
@@ -62,6 +62,24 @@ Install dependencies:
 
 ```
 npm install
+```
+
+Initialize app submodules (required for `epub`, `reddit`, `stars`, `transit`):
+
+```
+git submodule update --init --recursive
+```
+
+If cloning fresh, prefer:
+
+```
+git clone --recurse-submodules <your-repo-url>
+```
+
+Install dependencies for submodule apps that need their own `node_modules`:
+
+```
+npm --prefix apps/transit install
 ```
 
 ---
@@ -104,6 +122,15 @@ npm run dev
 * Install missing packages if needed
 * Start the Vite development server
 * Launch the Even Hub Simulator
+
+Note:
+* `epub`, `reddit`, `stars`, and `transit` are sourced from upstream git submodules under `apps/*`.
+* Submodule apps are integrated through adapter modules in `src/*-submodule-adapter.ts`.
+* To update those to their latest upstream commits:
+
+```
+git submodule update --remote --merge
+```
 
 ---
 
@@ -171,12 +198,17 @@ Notes:
 ```
 index.html      -> Entry point required by Even Hub
 src/main.ts     -> Common app page controller + app loader
+src/*-submodule-adapter.ts -> Compatibility adapters for submodule apps
 apps/_shared/app-types.ts -> Shared app contract used by all apps
 apps/demo       -> Current Even demo app
 apps/demo/main.ts -> Demo app actions
 apps/demo/even.ts -> Demo Even SDK integration layer
 apps/clock/index.ts -> Clock app module metadata
 apps/clock/main.ts -> Clock app actions
+apps/epub       -> Upstream epub-reader-g2 git submodule
+apps/reddit     -> Upstream rdt-even-g2-rddit-client git submodule
+apps/stars      -> Upstream even-stars git submodule
+apps/transit    -> Upstream even-transit git submodule
 vite.config.ts  -> Development server configuration
 ```
 
@@ -189,20 +221,29 @@ flowchart TD
   A["start-even.sh"] --> B["Vite dev server (APP_NAME)"]
   B --> C["index.html"]
   C --> D["src/main.ts app loader"]
-  D --> E["apps/<app>/index.ts (AppModule metadata)"]
-  E --> F["apps/<app>/main.ts (connect/action handlers)"]
-  F --> G["Even Hub SDK / bridge client"]
-  G <--> H["Even Hub Simulator"]
-  F --> I["UI status + #event-log"]
+  D --> E["Local app: apps/<app>/index.ts"]
+  D --> F["Submodule app: src/<app>-submodule-adapter.ts"]
+  F --> G["apps/<app>/src/* upstream entrypoint"]
+  E --> H["apps/<app>/main.ts handlers"]
+  G --> I["Even Hub SDK / bridge client"]
+  H --> I["Even Hub SDK / bridge client"]
+  I <--> J["Even Hub Simulator"]
+  H --> K["UI status + #event-log"]
+  F --> K["UI status + #event-log"]
 ```
 
 ## Entry Points
 
 * `start-even.sh`: CLI launcher, app selection, server boot, simulator launch.
-* `src/main.ts`: Runtime app discovery (`apps/*/index.ts`) and button wiring.
-* `apps/<app>/index.ts`: Registers app metadata and exports `createActions`.
-* `apps/<app>/main.ts`: Main handlers for `connect()` and `action()`.
-* Bridge-specific runtime modules: `apps/demo/even.ts`, `apps/clock/main.ts`, `apps/epub/even-client.ts`, `apps/stars/runtime.ts`, `apps/transit/main.ts`
+* `src/main.ts`: Runtime app discovery and adapter dispatch.
+* `src/*-submodule-adapter.ts`: Adapter layer that maps submodule app entrypoints into the shared `AppModule` contract.
+* `apps/<app>/index.ts`: Local app metadata entrypoint (for non-submodule apps).
+* `apps/<app>/main.ts`: Local app action handlers (for non-submodule apps).
+* Submodule upstream entrypoints:
+  * `apps/epub/src/main.ts`
+  * `apps/reddit/src/main.ts`
+  * `apps/stars/src/main.ts`
+  * `apps/transit/src/main.tsx`
 
 ---
 
