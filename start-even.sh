@@ -6,11 +6,12 @@
 
 set -e
 
-HOST="10.0.1.72"
-PORT="5173"
-URL="http://${HOST}:${PORT}"
+VITE_HOST="${VITE_HOST:-0.0.0.0}"
+SIM_HOST="${SIM_HOST:-127.0.0.1}"
+PORT="${PORT:-5173}"
+URL="${URL:-http://${SIM_HOST}:${PORT}}"
 
-echo "Starting Even Hub development environment... $URL"
+echo "Starting Even Hub development environment... ${URL}"
 
 # --------------------------------------------------
 # Helpers
@@ -53,23 +54,16 @@ if [ ! -d "node_modules/vite" ]; then
 fi
 
 # --------------------------------------------------
-# Ensure evenhub simulator installed globally
-# --------------------------------------------------
-
-if ! command_exists evenhub-simulator; then
-  echo "Installing evenhub-simulator globally..."
-  npm install -g @evenrealities/evenhub-simulator
-fi
-
-# --------------------------------------------------
 # Start Vite server
 # --------------------------------------------------
 
 echo "Starting Vite dev server..."
 
-npx vite --host ${HOST} --port ${PORT} &
+npx vite --host "${VITE_HOST}" --port "${PORT}" &
 
 VITE_PID=$!
+
+trap "kill ${VITE_PID}" EXIT
 
 # --------------------------------------------------
 # Wait for server to be reachable
@@ -88,12 +82,8 @@ echo "Vite is ready."
 # --------------------------------------------------
 
 echo "Launching Even Hub Simulator..."
-
-evenhub-simulator "$URL"
-
-# --------------------------------------------------
-# Cleanup on exit
-# --------------------------------------------------
-
-trap "kill $VITE_PID" EXIT
-
+if command_exists evenhub-simulator; then
+  evenhub-simulator "${URL}"
+else
+  npx @evenrealities/evenhub-simulator "${URL}"
+fi

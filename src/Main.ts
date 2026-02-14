@@ -1,23 +1,28 @@
 import { initEven } from './even'
 import { updateStatus } from './ui'
 
-let evenInstance: any = null
+type EvenInstance = Awaited<ReturnType<typeof initEven>>['even']
+
+let evenInstance: EvenInstance | null = null
 
 async function start() {
-
   const connectBtn = document.getElementById("connectBtn")
   const actionBtn = document.getElementById("actionBtn")
 
   connectBtn?.addEventListener("click", async () => {
-
-    updateStatus("Connecting...")
+    updateStatus("Connecting to Even bridge...")
 
     try {
       const { even } = await initEven()
-
       evenInstance = even
 
-      updateStatus("Connected to Even bridge")
+      await even.renderStartupScreen()
+
+      if (even.mode === 'bridge') {
+        updateStatus("Connected. Demo page rendered in Even Hub Simulator.")
+      } else {
+        updateStatus("Bridge not found. Running browser-only mock mode.")
+      }
 
     } catch (err) {
       console.error(err)
@@ -26,7 +31,6 @@ async function start() {
   })
 
   actionBtn?.addEventListener("click", async () => {
-
     if (!evenInstance) {
       updateStatus("Not connected")
       return
@@ -34,14 +38,10 @@ async function start() {
 
     updateStatus("Sending demo action...")
 
-    // Example action placeholder
-    // Replace with real SDK call once integrating device features
-
-    console.log("Demo action sent")
+    await evenInstance.sendDemoAction()
 
     updateStatus("Done")
   })
 }
 
 start()
-

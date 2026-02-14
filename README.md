@@ -1,17 +1,17 @@
 # Even Hub Demo App (Beta)
 
+Clear statement: this project is a minimal starter app for building and testing Even Hub interactions in the Even Hub Simulator, without a physical Even device.
+
 ## Overview
 
-This project is a minimal example application for the Even Hub platform designed to run without real hardware using the Even Hub Simulator.
+This project is a minimal Even Hub example that works with the Even Hub Simulator and does not require a real device.
 
 The app demonstrates:
 
 * Basic Even Hub app structure
-* TypeScript-based development workflow
-* Integration with the official Even Hub SDK
-* Optional use of the community "even-better" SDK abstraction
-* Local development using Vite
-* Running and testing inside the Even Hub Simulator
+* TypeScript development with Vite
+* Integration via `@jappyjan/even-better-sdk`
+* Simulator-first workflow (no real device required)
 
 The goal of this repository is to provide a simple starting point for building Even Hub applications while keeping the architecture easy to understand and extend.
 
@@ -53,13 +53,28 @@ npm install
 
 ## Running the App
 
-Start the development environment using:
+Use this flow:
 
 ```
+npm install
 ./start-even.sh
 ```
 
-This script will:
+Then:
+
+1. Open the app in your browser.
+2. Click **Connect**.
+3. If bridge mode is available, the simulator renders the startup page.
+4. Use simulator controls (Up, Down, Click, DoubleClick) to generate events.
+5. Click **Demo Action** to send a sample action.
+
+You can also run only the web app with:
+
+```
+npm run dev
+```
+
+`./start-even.sh` remains the recommended full environment because it will:
 
 * Verify required dependencies
 * Install missing packages if needed
@@ -83,8 +98,10 @@ vite.config.ts  -> Development server configuration
 ## Development Notes
 
 * The app behaves like a standard web application.
-* Communication with Even devices occurs through the Even App Bridge.
-* Simulator development allows testing without physical hardware.
+* Communication with Even Hub happens through the Even App Bridge.
+* In normal browser mode (without bridge), the app falls back to a mock mode so the UI still runs.
+* In simulator mode, pressing **Connect** renders a basic demo page in the Hub simulator.
+* Input events are rendered in the simulator page and logged to the browser console for debugging.
 
 ---
 
@@ -102,5 +119,6 @@ https://www.npmjs.com/package/@jappyjan/even-better-sdk
 * (SUPER ROUGH) Demo app: https://github.com/even-realities/EH-InNovel
 * Simulator: https://www.npmjs.com/package/@evenrealities/evenhub-simulator
 
+## GitHub Hints
 
 git push -u origin main
