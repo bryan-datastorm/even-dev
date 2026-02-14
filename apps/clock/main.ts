@@ -1,5 +1,6 @@
 import { EvenBetterSdk } from '@jappyjan/even-better-sdk'
 import type { AppActions, SetStatus } from '../_shared/app-types'
+import { appendEventLog } from '../_shared/log'
 
 type ClockClient = {
   mode: 'bridge' | 'mock'
@@ -123,6 +124,7 @@ export function createClockActions(setStatus: SetStatus): AppActions {
   return {
     async connect() {
       setStatus('Clock: connecting to Even bridge...')
+      appendEventLog('Clock: connect requested')
 
       try {
         const { clock } = await initClock()
@@ -132,23 +134,29 @@ export function createClockActions(setStatus: SetStatus): AppActions {
 
         if (clock.mode === 'bridge') {
           setStatus('Clock: connected and ticking in simulator.')
+          appendEventLog('Clock: connected to bridge')
         } else {
           setStatus('Clock: bridge not found. Running mock mode.')
+          appendEventLog('Clock: running in mock mode (bridge unavailable)')
         }
       } catch (err) {
         console.error(err)
         setStatus('Clock: connection failed')
+        appendEventLog('Clock: connection failed')
       }
     },
     async action() {
       if (!clockClient) {
         setStatus('Clock: not connected')
+        appendEventLog('Clock: toggle blocked (not connected)')
         return
       }
 
       setStatus('Clock: toggling ticking...')
+      appendEventLog('Clock: toggling ticking')
       await clockClient.toggleTicking()
       setStatus('Clock: toggle applied')
+      appendEventLog('Clock: toggle applied')
     },
   }
 }

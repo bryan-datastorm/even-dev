@@ -1,5 +1,6 @@
 import { EvenBetterSdk } from '@jappyjan/even-better-sdk'
 import { OsEventTypeList, type EvenHubEvent } from '@evenrealities/even_hub_sdk'
+import { appendEventLog } from '../_shared/log'
 
 type RuntimeMode = 'bridge' | 'mock'
 
@@ -163,6 +164,7 @@ function getBridgeClient(options?: EvenInitOptions): EvenClient {
     })
 
     const suffix = label === 'Unknown' ? ` (${String(rawEventType ?? 'n/a')})` : ''
+    appendEventLog(`Demo input: ${label}${suffix}`)
     lastInput.setContent(`Last input: ${label}${suffix}`)
     await page.render()
   }

@@ -16,6 +16,12 @@
   "dependencies": {
     "@evenrealities/even_hub_sdk": "^0.0.7",
     "@jappyjan/even-better-sdk": "^0.0.8",
+    "hyphenation.de": "^0.2.1",
+    "hyphenation.en-us": "^0.2.1",
+    "hyphenation.ru": "^0.2.1",
+    "hyphenation.uk": "^0.2.1",
+    "hypher": "^0.2.5",
+    "jszip": "^3.10.1",
     "typescript": "^5.9.3"
   },
   "devDependencies": {

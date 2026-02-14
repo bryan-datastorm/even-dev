@@ -14,3 +14,21 @@ button {
   background: #1e1e1e;
   color: white;
 }
+
+#status {
+  margin-top: 10px;
+}
+
+#event-log {
+  margin-top: 12px;
+  padding: 10px;
+  border-radius: 8px;
+  background: #121212;
+  border: 1px solid #2a2a2a;
+  color: #d5d5d5;
+  font-size: 12px;
+  line-height: 1.4;
+  white-space: pre-wrap;
+  max-height: 220px;
+  overflow: auto;
+}

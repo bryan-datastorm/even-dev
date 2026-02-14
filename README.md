@@ -1,6 +1,8 @@
-# Even Hub Demo App (Beta)
+# Even Hub Painless Simulator v0.0.1
 
 ![demo](./media/demo.png)
+![epub](./media/epub.png)
+![epub2](./media/epub2.png)
 
 This project is a minimal starter app for building and testing Even Hub interactions in the Even Hub Simulator, without a physical Even device.
 
@@ -16,6 +18,14 @@ The app demonstrates:
 * Simulator-first workflow (no real device required)
 
 The goal of this repository is to provide a simple starting point for building Even Hub applications while keeping the architecture easy to understand and extend.
+
+
+|    AppName   |                     Short Description                |
+|:------------:|:-----------------------------------------------------|
+|    [clock](./apps/clock/)     | Clock App - app refresh test showcase                |
+|    [demo](./apps/demo/)      | Demo app (base) - simple control showcase            |
+|    [epub](./apps/epub/)      | Epub reader demo #chortya/epub-reader-g2             |
+
 
 ---
 
