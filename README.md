@@ -1,8 +1,10 @@
-# Even Hub Painless Simulator v0.0.1
+# Unified Even Hub Simulator v0.0.2
+
+Multi-Application Simulator environemnt to test EvenHub Applications.
 
 ![demo](./media/demo.png)
 
-This project is a minimal starter app for building and testing Even Hub interactions in the Even Hub Simulator, without a physical Even device.
+This project is a minimal starter app collection for building and testing Even Hub interactions in the Even Hub Simulator, without a physical Even device.
 
 ## Overview
 
