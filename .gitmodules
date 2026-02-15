@@ -10,3 +10,6 @@
 [submodule "apps/transit"]
 	path = apps/transit
 	url = https://github.com/langerhans/even-transit
+[submodule "misc/editor"]
+	path = misc/editor
+	url = https://github.com/langerhans/even-ui-builder.git
