@@ -6,10 +6,40 @@ type AppModuleShape = {
 }
 
 const appEntryModules = import.meta.glob('../apps/*/index.ts')
-const redditSubmoduleMarker = import.meta.glob('../apps/reddit/src/even-client.ts')
-const starsSubmoduleMarker = import.meta.glob('../apps/stars/src/main.ts')
-const epubSubmoduleMarker = import.meta.glob('../apps/epub/src/main.ts')
-const transitSubmoduleMarker = import.meta.glob('../apps/transit/package.json')
+
+type SubmoduleAdapter = {
+  id: string
+  marker: Record<string, () => Promise<unknown>>
+  load: () => Promise<AppModuleShape>
+}
+
+const submoduleAdapters: SubmoduleAdapter[] = [
+  {
+    id: 'reddit',
+    marker: import.meta.glob('../apps/reddit/src/even-client.ts'),
+    load: () => import('./reddit-submodule-adapter') as Promise<AppModuleShape>,
+  },
+  {
+    id: 'stars',
+    marker: import.meta.glob('../apps/stars/src/main.ts'),
+    load: () => import('./stars-submodule-adapter') as Promise<AppModuleShape>,
+  },
+  {
+    id: 'epub',
+    marker: import.meta.glob('../apps/epub/src/main.ts'),
+    load: () => import('./epub-submodule-adapter') as Promise<AppModuleShape>,
+  },
+  {
+    id: 'transit',
+    marker: import.meta.glob('../apps/transit/package.json'),
+    load: () => import('./transit-submodule-adapter') as Promise<AppModuleShape>,
+  },
+  {
+    id: 'chess',
+    marker: import.meta.glob('../apps/chess/package.json'),
+    load: () => import('./chess-submodule-adapter') as Promise<AppModuleShape>,
+  },
+]
 
 function extractAppName(modulePath: string): string {
   const match = modulePath.match(/\.\.\/apps\/([^/]+)\/index\.ts$/)
@@ -21,20 +51,19 @@ function discoveredApps(): string[] {
     .map(extractAppName)
     .filter(Boolean)
 
-  if (Object.keys(redditSubmoduleMarker).length > 0) {
-    names.push('reddit')
-  }
-  if (Object.keys(starsSubmoduleMarker).length > 0) {
-    names.push('stars')
-  }
-  if (Object.keys(epubSubmoduleMarker).length > 0) {
-    names.push('epub')
-  }
-  if (Object.keys(transitSubmoduleMarker).length > 0) {
-    names.push('transit')
+  for (const adapter of submoduleAdapters) {
+    if (Object.keys(adapter.marker).length > 0) {
+      names.push(adapter.id)
+    }
   }
 
   return [...new Set(names)].sort((a, b) => a.localeCompare(b))
+}
+
+function getSubmoduleAdapter(appId: string): SubmoduleAdapter | undefined {
+  return submoduleAdapters.find((adapter) => (
+    adapter.id === appId && Object.keys(adapter.marker).length > 0
+  ))
 }
 
 function resolveSelectedApp(appNames: string[]): string {
@@ -70,17 +99,11 @@ async function boot() {
   const selectedAppName = resolveSelectedApp(appNames)
   const modulePath = `../apps/${selectedAppName}/index.ts`
   const importer = appEntryModules[modulePath]
-
+  const adapter = getSubmoduleAdapter(selectedAppName)
   const module = importer
     ? ((await importer()) as AppModuleShape)
-    : selectedAppName === 'reddit' && Object.keys(redditSubmoduleMarker).length > 0
-      ? ((await import('./reddit-submodule-adapter')) as AppModuleShape)
-      : selectedAppName === 'stars' && Object.keys(starsSubmoduleMarker).length > 0
-        ? ((await import('./stars-submodule-adapter')) as AppModuleShape)
-        : selectedAppName === 'epub' && Object.keys(epubSubmoduleMarker).length > 0
-          ? ((await import('./epub-submodule-adapter')) as AppModuleShape)
-          : selectedAppName === 'transit' && Object.keys(transitSubmoduleMarker).length > 0
-            ? ((await import('./transit-submodule-adapter')) as AppModuleShape)
+    : adapter
+      ? await adapter.load()
       : null
 
   if (!module) {

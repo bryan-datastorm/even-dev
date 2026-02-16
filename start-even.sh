@@ -11,6 +11,7 @@ SIM_HOST="${SIM_HOST:-127.0.0.1}"
 PORT="${PORT:-5173}"
 URL="${URL:-http://${SIM_HOST}:${PORT}}"
 APP_NAME="${APP_NAME:-}"
+CLI_APP_NAME="${1:-}"
 
 echo "Starting Even Hub development environment... ${URL}"
 
@@ -115,8 +116,21 @@ fi
 
 echo "Starting Vite dev server..."
 
+if [ -n "${CLI_APP_NAME}" ]; then
+  APP_NAME="${CLI_APP_NAME}"
+fi
+
 SELECTED_APP="$(resolve_app_selection)"
 echo "Selected app: ${SELECTED_APP}"
+
+# --------------------------------------------------
+# Ensure selected app dependencies installed (if needed)
+# --------------------------------------------------
+
+if [ -f "apps/${SELECTED_APP}/package.json" ] && [ ! -d "apps/${SELECTED_APP}/node_modules" ]; then
+  echo "Installing dependencies for apps/${SELECTED_APP}..."
+  npm --prefix "apps/${SELECTED_APP}" install
+fi
 
 VITE_APP_NAME="${SELECTED_APP}" npx vite --host "${VITE_HOST}" --port "${PORT}" &
 

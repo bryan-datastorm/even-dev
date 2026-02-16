@@ -13,3 +13,6 @@
 [submodule "misc/editor"]
 	path = misc/editor
 	url = https://github.com/langerhans/even-ui-builder.git
+[submodule "apps/chess"]
+	path = apps/chess
+	url = https://github.com/dmyster145/EvenChess

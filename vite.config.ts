@@ -1,10 +1,33 @@
 // vite.config.ts
 import { execFile } from 'node:child_process'
+import { readFile } from 'node:fs/promises'
 import { defineConfig } from 'vite'
+
+const CHESS_STOCKFISH_BASE_URL = '/stockfish/'
+const CHESS_STOCKFISH_DIR = new URL('./apps/chess/public/stockfish/', import.meta.url)
 
 export default defineConfig({
   plugins: [{
     name: 'restapi-proxy',
+    async generateBundle() {
+      const stockfishFiles = [
+        ['stockfish.wasm.js', 'application/javascript'],
+        ['stockfish.wasm', 'application/wasm'],
+      ] as const
+
+      for (const [filename] of stockfishFiles) {
+        try {
+          const source = await readFile(new URL(filename, CHESS_STOCKFISH_DIR))
+          this.emitFile({
+            type: 'asset',
+            fileName: `stockfish/${filename}`,
+            source,
+          })
+        } catch {
+          // Chess submodule may be absent; skip emitting assets in that case.
+        }
+      }
+    },
     configureServer(server) {
       const openExternalUrl = async (target: string): Promise<void> => {
         const openCommand = process.platform === 'darwin'
@@ -46,6 +69,35 @@ export default defineConfig({
           return false
         }
       }
+
+      server.middlewares.use(CHESS_STOCKFISH_BASE_URL, async (req, res, next) => {
+        if (req.method !== 'GET') {
+          next()
+          return
+        }
+
+        const reqUrl = req.url ?? '/'
+        const stockfishPath = reqUrl.split('?')[0] ?? '/'
+        if (stockfishPath.includes('..')) {
+          res.statusCode = 400
+          res.setHeader('content-type', 'text/plain; charset=utf-8')
+          res.end('Invalid stockfish asset path')
+          return
+        }
+
+        const cleanName = stockfishPath.replace(/^\/+/, '')
+        try {
+          const source = await readFile(new URL(cleanName, CHESS_STOCKFISH_DIR))
+          const contentType = cleanName.endsWith('.wasm')
+            ? 'application/wasm'
+            : 'application/javascript; charset=utf-8'
+          res.statusCode = 200
+          res.setHeader('content-type', contentType)
+          res.end(source)
+        } catch {
+          next()
+        }
+      })
 
       server.middlewares.use('/__open_editor', async (req, res) => {
         if (req.method !== 'GET') {

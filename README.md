@@ -1,6 +1,6 @@
-# Unified Even Hub Simulator v0.0.2
+# Unified Even Hub Simulator v0.0.3
 
-Multi-Application Simulator environemnt to test EvenHub Applications.
+Multi-application simulator environment for testing Even Hub applications.
 
 ![demo](./media/demo.png)
 
@@ -14,7 +14,7 @@ The app demonstrates:
 
 * Basic Even Hub app structure
 * TypeScript development with Vite
-* Integration via `@jappyjan/even-better-sdk`
+* Integration via `@evenrealities/even_hub_sdk` and `@jappyjan/even-better-sdk`
 * Simulator-first workflow (no real device required)
 
 The goal of this repository is to provide a simple starting point for building Even Hub applications while keeping the architecture easy to understand and extend.
@@ -23,6 +23,7 @@ The goal of this repository is to provide a simple starting point for building E
 |              AppName          |                      Short Description                          |     Visual        |
 |:-----------------------------:|:----------------------------------------------------------------| :---------------: |
 |    [clock](./apps/clock/)     | Clock App - app refresh test showcase                           | ![clock](./media/clock.png) |
+|    [chess](https://github.com/dmyster145/EvenChess) | Chess HUD app @dmyster145/EvenChess (git submodule) | ![chess](./apps/chess/assets/screenshot.png) |
 |    [demo](./apps/demo/)       | Demo app (base) - simple control showcase                       | ![demo](./media/demo.png) |
 |    [epub](https://github.com/chortya/epub-reader-g2)       | Epub reader demo @chortya/epub-reader-g2 (git submodule)        | ![epub](./media/epub.png) ![epub2](./media/epub2.png) | 
 |    [reddit](https://github.com/fuutott/rdt-even-g2-rddit-client)   | Reddit feed and comments browser @fuutott/rdt-even-g2-rddit-client (git submodule) | ![reddit](./media/reddit.png) |
@@ -67,7 +68,7 @@ Install dependencies:
 npm install
 ```
 
-Initialize app submodules (required for `epub`, `reddit`, `stars`, `transit`):
+Initialize app submodules (required for `chess`, `epub`, `reddit`, `stars`, `transit`):
 
 ```
 git submodule update --init --recursive
@@ -79,11 +80,14 @@ If cloning fresh, prefer:
 git clone --recurse-submodules <your-repo-url>
 ```
 
-Install dependencies for submodule apps that need their own `node_modules`:
+Install dependencies for submodule apps that need their own `node_modules` (optional preinstall):
 
 ```
 npm --prefix apps/transit install
+npm --prefix apps/chess install
 ```
+
+`./start-even.sh` also installs dependencies automatically for the selected app when needed.
 
 ---
 
@@ -96,13 +100,19 @@ npm install
 ./start-even.sh
 ```
 
-When multiple apps exist under `apps/*`, the launcher prompts you to choose one by folder name.
 App selection is handled in the launcher (command line), not in the web page.
+When multiple apps exist under `apps/*`, the launcher prompts you to choose one by folder name.
 
 You can also select directly with an environment variable:
 
 ```
 APP_NAME=demo ./start-even.sh
+```
+
+Or pass the app name as the first argument:
+
+```
+./start-even.sh demo
 ```
 
 Then:
@@ -111,7 +121,7 @@ Then:
 2. Click **Connect**.
 3. If bridge mode is available, the simulator renders the startup page.
 4. Use simulator controls (Up, Down, Click, DoubleClick) to generate events.
-5. Click **Demo Action** to send a sample action.
+5. Click the app action button (label depends on the selected app).
 
 You can also run only the web app with:
 
@@ -127,7 +137,7 @@ npm run dev
 * Launch the Even Hub Simulator
 
 Note:
-* `epub`, `reddit`, `stars`, and `transit` are sourced from upstream git submodules under `apps/*`.
+* `chess`, `epub`, `reddit`, `stars`, and `transit` are sourced from upstream git submodules under `apps/*`.
 * Submodule apps are integrated through adapter modules in `src/*-submodule-adapter.ts`.
 * To update those to their latest upstream commits:
 
@@ -239,6 +249,7 @@ apps/demo/even.ts -> Demo Even SDK integration layer
 apps/clock/index.ts -> Clock app module metadata
 apps/clock/main.ts -> Clock app actions
 apps/epub       -> Upstream epub-reader-g2 git submodule
+apps/chess      -> Upstream EvenChess git submodule
 apps/reddit     -> Upstream rdt-even-g2-rddit-client git submodule
 apps/stars      -> Upstream even-stars git submodule
 apps/transit    -> Upstream even-transit git submodule
@@ -274,6 +285,7 @@ flowchart TD
 * `apps/<app>/main.ts`: Local app action handlers (for non-submodule apps).
 * Submodule upstream entrypoints:
   * `apps/epub/src/main.ts`
+  * `apps/chess/src/main.ts`
   * `apps/reddit/src/main.ts`
   * `apps/stars/src/main.ts`
   * `apps/transit/src/main.tsx`
@@ -285,8 +297,8 @@ flowchart TD
 * The app behaves like a standard web application.
 * Communication with Even Hub happens through the Even App Bridge.
 * In normal browser mode (without bridge), the app falls back to a mock mode so the UI still runs.
-* In simulator mode, pressing **Connect** renders a basic demo page in the Hub simulator.
-* Demo app input events are rendered in the simulator page and logged to the browser console for debugging.
+* In simulator mode, pressing **Connect** runs the selected app's connect action and renders that app's UI flow.
+* Input events and app logs are available in the browser console for debugging.
 
 ---
 
