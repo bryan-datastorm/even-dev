@@ -61,6 +61,7 @@ For general G2 development documentation, see the [G2 development notes](https:/
 |    [transit](https://github.com/langerhans/even-transit) | Public transport planner by @langerhans | ![stars](./media/transport.png) |
 |    [weather](https://github.com/nickustinov/weather-even-g2) | Weather forecast by @nickustinov | ![weather](./media/weather.png) |
 |    [stt](https://github.com/nickustinov/stt-even-g2) | Real-time speech-to-text via [Soniox](https://soniox.com) by @nickustinov | |
+|    [smart-cart](https://github.com/bryan-datastorm/smart-cart-even-g2) | Glanceable, hands-free grocery list by @bryan-datastorm | |
 
 ---
 
